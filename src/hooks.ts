@@ -5,18 +5,13 @@ import { createSelector } from 'reselect'
 export function useScopedAction(name: string, action: any, deps: any[] = []) {
   const dispatch = Redux.useDispatch()
   const [loading, setLoading] = React.useState(false)
-  // const [error, setError] = React.useState(null)
   const actionCreator = useAsyncCallback(async (...opts: any[]) => {
     const values = name ? { __values__: { scope: name } } : {}
     const promise = dispatch({ ...action(...opts), ...values })
     if (promise instanceof Function) {
       setLoading(true)
-      // setError(null)
       try {
         await promise()
-        // } catch (e) {
-        //   setError(e)
-        //   throw e
       } finally {
         setLoading(false)
       }

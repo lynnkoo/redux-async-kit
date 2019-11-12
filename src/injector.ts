@@ -15,13 +15,13 @@ export function formatReducers(reducers: any, values: any = {}) {
 }
 
 export function injectReducers(reducers: any, name?: string) {
-  const asyncReducers: any = {}
+  if (!storeInstance) {
+    return
+  }
   if (name) {
+    const { asyncReducers } = storeInstance
     if (asyncReducers[name]) {
       console.warn('exist reducer name')
-      return
-    }
-    if (!storeInstance) {
       return
     }
     const injectedReducers = formatReducers(reducers, { scope: name })
