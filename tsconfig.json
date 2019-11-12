@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+    "module": "esnext",
+    "target": "es5",
+    "lib": ["es7", "dom", "esnext", "es2017.object"],
+    "declaration": true,
+    "rootDir": "src",
+    "strict": true,
+    "jsx": "react",
+    "moduleResolution": "node"
+  },
+  "exclude": ["node_modules", "build"],
+  "include": ["src"]
+}

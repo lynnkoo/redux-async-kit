@@ -1,0 +1,62 @@
+{
+  "name": "redux-async-kit",
+  "version": "0.0.1",
+  "description": "A simplify work flow for redux",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "npm run format:tslint && npm run format:prettier",
+    "format:tslint": "tslint --fix --config ./tslint.json 'src/**/*.{ts,tsx}'",
+    "format:prettier": "prettier --config .prettierrc --write 'src/**/*.{js,jsx,ts,tsx,scss}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lynnkoo/redux-async-kit.git"
+  },
+  "keywords": [
+    "redux-async-kit",
+    "redux-async",
+    "redux"
+  ],
+  "author": "lynnkoo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lynnkoo/redux-async-kit/issues"
+  },
+  "homepage": "https://github.com/lynnkoo/redux-async-kit#readme",
+  "dependencies": {
+    "immer": "^4.0.1",
+    "lodash": "^4.17.15",
+    "react-loadable": "^5.5.0",
+    "react-redux": "^7.1.1",
+    "redux": "^4.0.4",
+    "redux-observable": "^1.2.0",
+    "reselect": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.141",
+    "@types/node": "^12.7.8",
+    "@types/react-loadable": "^5.5.2",
+    "@types/react-redux": "^7.1.4",
+    "husky": "^3.0.7",
+    "lint-staged": "^9.4.0",
+    "prettier": "^1.18.2",
+    "tslint": "^5.11.0",
+    "tslint-react": "^3.6.0",
+    "typescript": "^3.2.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,md,css,scss,json,html}": [
+      "npm run format",
+      "git add"
+    ],
+    "yarn.lock": [
+      "git rm --cached"
+    ]
+  }
+}
