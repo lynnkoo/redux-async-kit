@@ -1,10 +1,11 @@
 {
   "name": "redux-async-kit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A simplify work flow for redux",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
+    "publish": "npm run build && npm publish",
     "format": "npm run format:tslint && npm run format:prettier",
     "format:tslint": "tslint --fix --config ./tslint.json 'src/**/*.{ts,tsx}'",
     "format:prettier": "prettier --config .prettierrc --write 'src/**/*.{js,jsx,ts,tsx,scss}'"
