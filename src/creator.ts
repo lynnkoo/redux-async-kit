@@ -7,8 +7,8 @@ const NoLoading: React.FC = () => {
   return null
 }
 
-export function createSlice(opts: any) {
-  const { reducers = {}, loader, name, loading } = opts
+export function createSlice(name: string, opts: any) {
+  const { reducers = {}, loader, loading } = opts
   return loadable({
     loader: () => {
       if (reducers) {
