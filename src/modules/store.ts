@@ -8,20 +8,23 @@ import {
 } from 'redux'
 import { asyncMiddleware } from './async'
 import { formatReducers } from './injector'
+import { composeWithDevTools } from 'redux-devtools-extension'
+import loggerMiddleware from 'redux-logger'
 
 type StoreInstance = Store & {
   asyncReducers: any
 }
 
 export let storeInstance: StoreInstance | undefined
-  // TODO: export store for debug
-  // tslint:disable-next-line
-;(window as any).store = storeInstance
+
+function createDefaultMiddleware() {
+  return [asyncMiddleware, composeWithDevTools, loggerMiddleware]
+}
 
 export function configureStore(configure: any = {}, initialState = {}) {
-  const { epics, middlewares = [], reducers = {} } = configure
+  const { epics, middlewares = [], reducers = {}, injector } = configure
   // configure middlewares
-  const defaultMiddlewares: any[] = [asyncMiddleware]
+  const defaultMiddlewares: any[] = createDefaultMiddleware()
   const asyncReducers: any = formatReducers(reducers)
   const runEpics = epics && epics.length > 0
   const epicMiddleware = createEpicMiddleware()
@@ -36,12 +39,14 @@ export function configureStore(configure: any = {}, initialState = {}) {
   const combinedReducers = combineReducers({ ...asyncReducers })
   // create store
   const store = createStore(combinedReducers, initialState, enhancer)
+
   if (runEpics) {
     epicMiddleware.run(epics)
   }
-  storeInstance = {
-    ...store,
-    asyncReducers,
+  storeInstance = { ...store, asyncReducers } as any
+
+  if (injector) {
+    injector()
   }
   return store
 }

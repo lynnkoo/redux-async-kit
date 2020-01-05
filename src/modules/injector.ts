@@ -14,7 +14,7 @@ export function formatReducers(reducers: any, values: any = {}) {
   })
 }
 
-export function injectReducers(reducers: any, name?: string) {
+export function injectReducers(name: string, reducers: any) {
   if (!storeInstance) {
     return
   }
@@ -26,7 +26,7 @@ export function injectReducers(reducers: any, name?: string) {
     }
     const injectedReducers = formatReducers(reducers, { scope: name })
     asyncReducers[name] = combineReducers(injectedReducers)
-    const combinedReducers = combineReducers({ ...asyncReducers })
+    const combinedReducers = combineReducers({ ...asyncReducers }) as any
     storeInstance.replaceReducer(combinedReducers)
   }
 }
