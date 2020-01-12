@@ -1,6 +1,6 @@
 {
-  "name": "reudx-async-kit",
-  "version": "0.0.6",
+  "name": "redux-async-kit",
+  "version": "0.0.10",
   "description": "A simplify work flow for redux",
   "main": "build/index.js",
   "scripts": {

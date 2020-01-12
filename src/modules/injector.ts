@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { mapValues } from 'lodash'
+import mapValues from 'lodash/mapValues'
 import { storeInstance } from './store'
 
 const initialValues = {}

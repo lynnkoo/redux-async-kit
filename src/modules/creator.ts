@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { injectReducers } from './injector'
-import produce from 'immer'
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 import { useScopedAction, useScopedSelector } from './hooks'
 
 export function createLazyComponent(opts: any) {
