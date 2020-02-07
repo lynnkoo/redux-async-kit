@@ -1,12 +1,12 @@
 {
   "name": "redux-async-kit",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A simplify work flow for redux",
   "main": "build/index.js",
   "scripts": {
     "start": "start-storybook -p 6006",
     "build": "webpack",
-    "format": "npm run format:tslint && npm run format:prettier",
+    "format": "npm run format:tslint",
     "format:tslint": "tslint --fix --config ./tslint.json 'src/**/*.{ts,tsx}'",
     "format:prettier": "prettier --config .prettierrc --write 'src/**/*.{js,jsx,ts,tsx,scss}'"
   },
@@ -73,7 +73,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md,css,scss,json,html}": [
+    "*.{js,jsx,ts,tsx,md,css,scss,html}": [
       "npm run format",
       "git add"
     ],

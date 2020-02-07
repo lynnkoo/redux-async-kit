@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { injectReducers } from './injector'
+import produce from 'immer'
 import cloneDeep from 'lodash/cloneDeep'
 import { useScopedAction, useScopedSelector } from './hooks'
 
@@ -29,7 +30,7 @@ export function createSlice(name: string, reducers: any) {
 export function createReducer(initialState: any, reducerMap: any) {
   return (injectState: any = initialState) => {
     const injectedState = cloneDeep(Object.assign(initialState, injectState))
-    return (state: any = injectedState, action: any) => {
+    return produce((state: any = injectedState, action: any) => {
       const { __values__: { scope } = {} as any } = state
       const { __values__: { scope: actionScope } = {} as any } = action
       if (scope && scope !== actionScope) {
@@ -40,6 +41,10 @@ export function createReducer(initialState: any, reducerMap: any) {
         return reducer(action)
       }
       return state
-    }
+    })
   }
+}
+
+export function createPayloadAction(type: string) {
+  return (payload: any) => ({ type, payload })
 }

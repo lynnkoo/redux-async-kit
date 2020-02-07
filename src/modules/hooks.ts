@@ -28,11 +28,6 @@ export function useScopedAction(name: string, action: any, deps: any[] = []) {
   return [actionCreator, loading]
 }
 
-// export function useGlobalAction(action: any, deps: any[] = []) {
-//   const actions = useScopedAction('', action, deps)
-//   return actions
-// }
-
 function createSelectorMemo(selector: any) {
   return () => createSelector(selector, (state: any) => state)
 }
@@ -50,9 +45,15 @@ export function useScopedSelector(name: string, selector: any) {
   })
 }
 
-// export function useGlobalSelector(selector: any) {
-//   return useScopedSelector('', selector)
-// }
+export function usePreviousForNull(data: any) {
+  const [cache, setCache] = React.useState(data)
+  React.useEffect(() => {
+    if (data) {
+      setCache(data)
+    }
+  }, [data])
+  return data || cache
+}
 
 export function useAsyncCallback(callback: any, deps: any = []) {
   return React.useMemo(() => {
@@ -68,13 +69,18 @@ export function useCurrentCallback(callback: any, deps: any[] = []) {
   return ref
 }
 
-export function useActionCallback(callback: any, deps: any = []) {
+// async function callAsyncFunction(callback: any) {
+//   return async (opts: any) => {
+//   }
+// }
+
+export function useActionCallback(callback: any, deps: any = []): any {
   const [error, setError] = React.useState(null)
   const promise = React.useMemo(() => {
-    return async () => {
+    return async (e: any) => {
       setError(null)
       try {
-        await callback()
+        await callback(e)
       } catch (e) {
         setError(e)
       }
