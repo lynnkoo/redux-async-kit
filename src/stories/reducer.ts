@@ -3,6 +3,7 @@ import { createReducer } from '../modules/creator'
 
 const initialState = {
   name: '',
+  detail: '',
 }
 
 const mockCalculate = () => {
@@ -21,6 +22,12 @@ const reducerMap = (state: any) => ({
   },
   [TEST_ASYNC_ACTION.GET_NAME]: () => {
     state.name = initialState.name
+  },
+  [TEST_ACTION.SET_DETAIL]: ({ payload }: any) => {
+    state.detail = payload
+  },
+  [TEST_ASYNC_ACTION.GET_DETAIL]: () => {
+    state.detail = initialState.detail
   },
 })
 

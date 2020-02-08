@@ -2,7 +2,7 @@ import * as React from 'react'
 import { injectReducers } from './injector'
 import produce from 'immer'
 import cloneDeep from 'lodash/cloneDeep'
-import { useScopedAction, useScopedSelector } from './hooks'
+import { useScopedAction, useScopedSelector, usePreviousForNull } from './hooks'
 
 export function createLazyComponent(opts: any) {
   const { loader, injector } = opts
@@ -11,10 +11,9 @@ export function createLazyComponent(opts: any) {
     return loader()
   })
 }
-
 export function createSlice(name: string, reducers: any) {
   return {
-    selector: (state: any) => state[name],
+    selector: (select: any) => (state: any) => select(state[name]),
     injector: () => {
       injectReducers(name, reducers)
     },
@@ -22,7 +21,9 @@ export function createSlice(name: string, reducers: any) {
       return useScopedAction(name, action, deps)
     },
     useSelector: (selector: any) => {
-      return useScopedSelector(name, selector)
+      const data = useScopedSelector(name, selector)
+      const cache = usePreviousForNull(data)
+      return [data, data || cache]
     },
   }
 }

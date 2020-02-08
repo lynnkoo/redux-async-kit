@@ -10,22 +10,27 @@ const sleep = (timeount: number) =>
 export function useScopedAction(name: string, action: any, deps: any[] = []) {
   const dispatch = Redux.useDispatch()
   const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(null)
   const actionCreator = useAsyncCallback(async (...opts: any[]) => {
     const values = name ? { __values__: { scope: name } } : {}
     const promise = dispatch({ ...action(...opts), ...values })
     if (promise instanceof Function) {
       setLoading(true)
+      setError(null)
       try {
         await promise()
         // 正常浏览器下，reducer 中的后续操作会阻塞线程，useCurrentCallback 应该拿到的都是最新数据
         // 如果有浏览器不兼容，可以尝试休眠解决
-        // await sleep(10)
+        await sleep(10)
+      } catch (e) {
+        setError(e)
+        throw(e)
       } finally {
         setLoading(false)
       }
     }
   }, deps)
-  return [actionCreator, loading]
+  return [actionCreator, { loading, error }]
 }
 
 function createSelectorMemo(selector: any) {
@@ -55,12 +60,6 @@ export function usePreviousForNull(data: any) {
   return data || cache
 }
 
-export function useAsyncCallback(callback: any, deps: any = []) {
-  return React.useMemo(() => {
-    return callback
-  }, deps)
-}
-
 export function useCurrentCallback(callback: any, deps: any[] = []) {
   const ref = React.useRef(callback)
   React.useEffect(() => {
@@ -69,22 +68,58 @@ export function useCurrentCallback(callback: any, deps: any[] = []) {
   return ref
 }
 
-// async function callAsyncFunction(callback: any) {
-//   return async (opts: any) => {
-//   }
-// }
-
-export function useActionCallback(callback: any, deps: any = []): any {
-  const [error, setError] = React.useState(null)
-  const promise = React.useMemo(() => {
-    return async (e: any) => {
-      setError(null)
+function callAsyncFunction(fun: any): any {
+  if (!fun) {
+    return fun
+  }
+  if (typeof fun === 'function') {
+    return (...opts: any) => {
+      return callAsyncFunction(fun(...opts))
+    }
+  }
+  if (typeof fun.then === 'function') {
+    return async (...opts: any) => {
       try {
-        await callback(e)
+        const f = await fun(...opts)
+        return callAsyncFunction(f)
       } catch (e) {
-        setError(e)
+        //
       }
     }
-  }, deps)
-  return [promise, error]
+  }
+  return fun
 }
+
+export function useActionCallback(callback: any, deps: any = []) {
+  return React.useMemo(() => {
+    return callAsyncFunction(callback)
+  }, deps)
+}
+
+export function useAsyncCallback(callback: any, deps: any = []) {
+  return React.useMemo(() => callback, deps)
+}
+
+export function useAsyncEffect(effect: any, deps = []) {
+  const asyncEffect = useAsyncCallback(async () => {
+      await effect()
+  }, deps)
+  React.useEffect(() => {
+      asyncEffect()
+  }, [asyncEffect])
+}
+
+// export function useActionCallback(callback: any, deps: any = []): any {
+//   const [error, setError] = React.useState(null)
+//   const promise = React.useMemo(() => {
+//     return async (e: any) => {
+//       setError(null)
+//       try {
+//         await callback(e)
+//       } catch (e) {
+//         setError(e)
+//       }
+//     }
+//   }, deps)
+//   return [promise, error]
+// }

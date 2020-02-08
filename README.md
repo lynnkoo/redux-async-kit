@@ -4,6 +4,8 @@
 
 ## Usage
 
+   You can run project by `npm start` to start storybook.
+
 ## Slice
 
 ```javascript
@@ -39,23 +41,67 @@ export const testReducer = createReducer(initialState, reducerMap)
 ## Action
 
 ```javascript
-function createAction(type: string) {
-  return (payload: any) => ({ type, payload })
+
+import { TEST_ACTION, TEST_ASYNC_ACTION } from './enums'
+import { createPayloadAction } from '../modules/creator'
+import { testSlice } from '.'
+import { testSelector } from './selectors'
+import { memoryCache } from '../modules/cache'
+
+const sleep = (timeountMS: any) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, timeountMS)
+  })
+
+const getName = async ({ count, keyword }: any = {}) => {
+    await sleep(1000)
+    if (keyword === '1') {
+        throw new Error('keyword === 1')
+    }
+    return 'GetNameSuccess' + count
+}
+
+const getDetail = async ({ name }: any = {}) => {
+    await sleep(500)
+    return 'GetDetailSuccess:' + name
 }
 
 export const testAction = {
-  testSuccess: createAction('TEST_ASYNC_ACTION_SUCCESS'),
+    setName: createPayloadAction(TEST_ACTION.SET_NAME),
+    setDetail: createPayloadAction(TEST_ACTION.SET_DETAIL),
 }
 
 export const testAsyncAction = {
-  getInfo: (testMeta) => ({
-    type: 'TEST_ASYNC_ACTION',
-    meta: { testMeta },
-    target: async (params) => { ... }
-    failure: 'TEST_ASYNC_ACTION_ERROR',
-    success: testAction.testSuccess,
-  }),
+    getName: (count: any, keyword: any) => ({
+        type: TEST_ASYNC_ACTION.GET_NAME,
+        meta: { count, keyword },
+        target: getName,
+        success: testAction.setName,
+        failure: TEST_ACTION.SET_ERROR,
+    }),
+    getDetail: () => ({
+        type: TEST_ASYNC_ACTION.GET_DETAIL,
+        target: getDetail,
+        selector: {
+            name: testSlice.selector(testSelector.testName),
+        },
+        meta: ({ name }: any) => ({ name }),
+        failure: TEST_ACTION.SET_ERROR,
+        success: testAction.setDetail,
+    }),
+    getDetailByCache: (keyword: any) => ({
+        type: TEST_ASYNC_ACTION.GET_DETAIL,
+        target: getDetail,
+        selector: {
+            name: testSlice.selector(testSelector.testName),
+        },
+        meta: ({ name }: any) => ({ name }),
+        cache: ({ meta }: any) => memoryCache(meta),
+        failure: TEST_ACTION.SET_ERROR,
+        success: testAction.setDetail,
+    }),
 }
+
 ```
 
 ## Store
@@ -65,14 +111,6 @@ import { configureStore createLazyComponent } from 'redux-async-kit'
 const store = configureStore({
   injector: testSlice.injector,
 })
-
-// export function createLazyComponent(opts: any) {
-//   const { loader, injector } = opts
-//   return React.lazy(() => {
-//     injector()
-//     return loader()
-//   })
-// }
 
 // inject by dynamic
 const HomePage = createLazyComponent({
@@ -87,20 +125,43 @@ const HomePage = createLazyComponent({
 ```javascript
 
 const TestComponent = () => {
-  const [getInfo, infoLoading] = testSlice.useAction(testAsyncAction.getInfo)
-  const name = testSlice.useSelector((state: any) => state.testScope.name)
+    const [count, setCount] = React.useState(0)
+    const [name, cacheName] = testSlice.useSelector(testSelector.testName)
+    const [detail] = testSlice.useSelector(testSelector.testDetail)
+    const [setName] = testSlice.useAction(testAction.setName)
+    const [getName, nameState] = testSlice.useAction(testAsyncAction.getName)
+    const [getDetail, detailState] = testSlice.useAction(testAsyncAction.getDetail)
+    const [getDetailByCache, detailCacheState] = testSlice.useAction(testAsyncAction.getDetailByCache)
 
-  const onGotInfo = useCurrentCallback(() => {
-      if (name === '...') { ... }
-  }, [name])
+    const onSetName = () => {
+        setName('ON SET NAME')
+    }
 
-  const [onGetInfo, infoError] = useActionCallback(async () => {
-    await getInfo('xxx')
-    onGotInfo.current()
-  }, [name])
+    const onGetName = useAsyncCallback(async (e: any) => {
+        await getName(count)
+        await getDetail()
+    }, [count])
+
+    const onGetNameByKeyword = useAsyncCallback((keyword: any) => async (e: any) => {
+        await getName(count, keyword)
+        await getDetail()
+    }, [count])
+
+    const onGetDetailByCache = useAsyncCallback(async (e: any) => {
+        await getDetailByCache()
+    }, [count])
+
+    const onGetDetail = useAsyncCallback(async (e: any) => {
+        await getDetail()
+    }, [count])
+
+    useAsyncEffect(async () => {
+        await getName(count)
+        await getDetailByCache()
+    })
 
   return (
-    <div onClick={onGetInfo}>Test Action</div>
+    <div> ... </div>
   )
 }
 

@@ -4,9 +4,10 @@ import { storiesOf } from '@storybook/react'
 import { configureStore } from '../modules/store'
 import { Provider } from 'react-redux'
 import { createSlice } from '../modules/creator'
-import { useActionCallback, usePreviousForNull } from '../modules/hooks'
+import { useAsyncCallback, useAsyncEffect } from '../modules/hooks'
 import { testReducer } from './reducer'
 import { testAsyncAction, testAction } from './action'
+import { testSelector } from './selectors'
 
 export const testSlice = createSlice('test', {
     testReducer,
@@ -17,37 +18,56 @@ const store = configureStore({
 })
 
 const BasicTestContainer = () => {
-    const [getName, nameLoading] = testSlice.useAction(testAsyncAction.getName)
+    const [count, setCount] = React.useState(0)
+    const [name, cacheName] = testSlice.useSelector(testSelector.testName)
+    const [detail] = testSlice.useSelector(testSelector.testDetail)
     const [setName] = testSlice.useAction(testAction.setName)
-    const name = testSlice.useSelector((state: any) => state.testReducer.name)
-    const cacheName = usePreviousForNull(name)
+    const [getName, nameState] = testSlice.useAction(testAsyncAction.getName)
+    const [getDetail, detailState] = testSlice.useAction(testAsyncAction.getDetail)
+    const [getDetailByCache, detailCacheState] = testSlice.useAction(testAsyncAction.getDetailByCache)
 
     const onSetName = () => {
         setName('ON SET NAME')
     }
 
-    const [onGetName] = useActionCallback(async (e: any) => {
-      await getName(name)
-    }, [name])
+    const onGetName = useAsyncCallback(async (e: any) => {
+        await getName(count)
+        await getDetail()
+    }, [count])
 
-    const [onGetNameError, nameError] = useActionCallback(async (e: any) => {
-        await getName('1')
-    }, [name])
+    const onGetNameByKeyword = useAsyncCallback((keyword: any) => async (e: any) => {
+        await getName(count, keyword)
+        await getDetail()
+    }, [count])
 
-    React.useEffect(() => {
-        getName()
-    }, [])
+    const onGetDetailByCache = useAsyncCallback(async (e: any) => {
+        await getDetailByCache()
+    }, [count])
+
+    const onGetDetail = useAsyncCallback(async (e: any) => {
+        await getDetail()
+    }, [count])
+
+    useAsyncEffect(async () => {
+        await getName(count)
+        await getDetailByCache()
+    })
 
     return (
         <div>
-            <div>GET NAME ACTION: {!nameLoading ? JSON.stringify(name) : 'loading...'}</div>
+            <div>COUNT: {JSON.stringify(count)}</div>
+            <div>GET NAME ACTION: {!nameState.loading ? JSON.stringify(name) : 'loading...'}</div>
             <div>NAME: {JSON.stringify(name)}</div>
             <div>CACHE NAME: {cacheName ? cacheName : 'loading...'}</div>
-            <div>GET NAME ERROR: {nameError && nameError.message}</div>
+            <div>GET NAME ERROR: {nameState.error && nameState.error.message}</div>
+            <div>DETAIL: {JSON.stringify(detail)}</div>
             <div style={{ marginTop: '30px'}}>
+                <div onClick={() => setCount(x => x + 1)}>ADD COUNT</div>
                 <div onClick={onGetName}>ON GET NAME</div>
                 <div onClick={onSetName}>ON SET NAME</div>
-                <div onClick={onGetNameError}>ON GET NAME ERROR</div>
+                <div onClick={onGetNameByKeyword('1')}>ON GET NAME ERROR</div>
+                <div onClick={onGetDetail}>ON GET DETAIL</div>
+                <div onClick={onGetDetailByCache}>ON GET DETAIL BY CACHE</div>
             </div>
         </div>
     )
