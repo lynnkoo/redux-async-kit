@@ -10,32 +10,61 @@
 
 ```javascript
 import { createSlice } from 'redux-async-kit'
-export const testSlice = createSlice('test', {
-  testScope: testReducer,
+// you can create simple like this
+const testSlice = createSlice('test', {
+  testReducer,
 })
+// and create the data in reducer
+/*
+  {
+    test: {
+      testReducer: {
+        __values__: {
+          scope: ['test'],
+        },
+      }
+    }
+  }
+ */
 ```
-
-   The reducer must created by ** createReducer **
 
 ## Reducer
 
 ```javascript
 import { createReducer } from 'redux-async-kit'
+// you must create reducer by createReducer
+
 const initialState = {
   name: 'testName',
 }
+const TEST_ACTION = 'TEST_ACTION'
+const TEST_ACTION_IMMER = 'TEST_ACTION_IMMER'
+
+// reducer is only change to reducer map, and you can use immer in reducer map
 const reducerMap = (state: any) => ({
-  TEST_ACTION: () => {
+  [TEST_ACTION]: () => {
     return {
       name: 'testAction',
     }
   },
-  TEST_ACTION_IMMER: (action) => {
+  [TEST_ACTION_IMMER]: (action) => {
     // usage by immer
     state.name = action.payload
   },
 })
+
 export const testReducer = createReducer(initialState, reducerMap)
+```
+
+## Selector
+
+```javascript
+// selector is a method for get value by root state
+export const testSelector = {
+  testName: (state: any) => state.testReducer.name,
+  testDetail: (state: any) => state.testReducer.detail,
+}
+
 ```
 
 ## Action
@@ -70,6 +99,24 @@ export const testAction = {
     setName: createPayloadAction(TEST_ACTION.SET_NAME),
     setDetail: createPayloadAction(TEST_ACTION.SET_DETAIL),
 }
+// type: action type
+//  - string
+// selector: select data from root state
+//  - state => ({ ... })
+//  - { [name]: [slice.selector(state => ...)] }
+// meta: target params
+//  - { ... }
+//  - selector => ({ ... })
+// target: promise function
+//  - async () => { ... }
+// success/failure: success dispatch
+//  - string: action type
+//  - (data) => { type: XXX, data }
+// cache: provice cache method
+//  - ({ meta, selector }) => {
+//      return value || cacheValue()
+//    }
+//
 
 export const testAsyncAction = {
     getName: (count: any, keyword: any) => ({

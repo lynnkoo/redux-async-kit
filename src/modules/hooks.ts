@@ -7,7 +7,7 @@ const sleep = (timeount: number) =>
     setTimeout(resolve, timeount)
   })
 
-export function useScopedAction(name: string, action: any, deps: any[] = []) {
+export function useScopedAction(name: string | string[], action: any, deps: any[] = []) {
   const dispatch = Redux.useDispatch()
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)

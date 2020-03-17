@@ -3,11 +3,14 @@ import { injectReducers } from './injector'
 import produce from 'immer'
 import cloneDeep from 'lodash/cloneDeep'
 import { useScopedAction, useScopedSelector, usePreviousForNull } from './hooks'
+import { normalizeArray } from 'js-basic-kit'
 
 export function createLazyComponent(opts: any) {
   const { loader, injector } = opts
   return React.lazy(() => {
-    injector()
+    normalizeArray(injector).forEach((inject) => {
+      inject()
+    })
     return loader()
   })
 }
@@ -34,7 +37,8 @@ export function createReducer(initialState: any, reducerMap: any) {
     return produce((state: any = injectedState, action: any) => {
       const { __values__: { scope } = {} as any } = state
       const { __values__: { scope: actionScope } = {} as any } = action
-      if (scope && scope !== actionScope) {
+      const scopes = normalizeArray(actionScope)
+      if (scope && !scopes.includes(scope)) {
         return state
       }
       const reducer = reducerMap(state)[action.type]

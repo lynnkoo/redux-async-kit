@@ -10,6 +10,7 @@ import { asyncMiddleware } from './async'
 import { formatReducers } from './injector'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import loggerMiddleware from 'redux-logger'
+import { normalizeArray } from 'js-basic-kit'
 
 type StoreInstance = Store & {
   asyncReducers: any
@@ -21,7 +22,16 @@ function createDefaultMiddleware() {
   return [asyncMiddleware, composeWithDevTools, loggerMiddleware]
 }
 
-export function configureStore(configure: any = {}, initialState = {}) {
+type IInjector = () => void
+
+type IConfigure = {
+  epics?: any,
+  middlewares?: any[],
+  reducers?: any,
+  injector?: IInjector | IInjector[]
+}
+
+export function configureStore(configure: IConfigure = {} as IConfigure, initialState = {}) {
   const { epics, middlewares = [], reducers = {}, injector } = configure
   // configure middlewares
   const defaultMiddlewares: any[] = createDefaultMiddleware()
@@ -45,8 +55,8 @@ export function configureStore(configure: any = {}, initialState = {}) {
   }
   storeInstance = { ...store, asyncReducers } as any
 
-  if (injector) {
-    injector()
-  }
+  normalizeArray(injector).forEach(inject => {
+    inject()
+  })
   return store
 }
